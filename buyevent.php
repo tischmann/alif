@@ -7,12 +7,13 @@ use Exception;
 class BuyEvent
 {
 
-    private $clientId = null;
-    private $clientPhone = null;
-    private $clientMail = null;
-    private $purchaseId = null;
-    private $purchaseDescr = null;
-    private $purchaseCost = null;
+    private $clientId = null; // Client ID
+    private $clientPhone = null; // Client phone number
+    private $clientMail = null; // Client E-mail address
+    private $purchaseId = null; // Purchase ID
+    private $purchaseDescr = null; // Purchase description
+    private $purchaseCost = null; // Purchase cost
+    const LOG_FILE  = "buyevent.log"; // Path to log file
 
     public function __construct(array $args)
     {
@@ -23,12 +24,13 @@ class BuyEvent
             self::showInfo();
         };
 
+        // Parsing arguments
+
+        // Show help info
         list($found, $value) = self::parseArgVal("/?", $args);
+        if ($found !== false) self::showInfo();
 
-        if ($found !== false) {
-            self::showInfo();
-        }
-
+        // Client ID
         list($found, $value) = self::parseArgVal("/c", $args);
 
         if ($found !== false) {
@@ -40,6 +42,7 @@ class BuyEvent
             $this->clientId = $value;
         }
 
+        // Client phone number
         list($found, $value) = self::parseArgVal("/n", $args);
 
         if ($found !== false) {
@@ -51,6 +54,7 @@ class BuyEvent
             $this->clientPhone = $value;
         }
 
+        // Client email address
         list($found, $value) = self::parseArgVal("/e", $args);
 
         if ($found !== false) {
@@ -62,6 +66,7 @@ class BuyEvent
             $this->clientMail = $value;
         }
 
+        // Purchase ID
         list($found, $value) = self::parseArgVal("/p", $args);
 
         if ($found !== false) {
@@ -73,6 +78,7 @@ class BuyEvent
             $this->purchaseId = $value;
         }
 
+        // Purchase description
         list($found, $value) = self::parseArgVal("/d", $args);
 
         if ($found !== false) {
@@ -84,6 +90,7 @@ class BuyEvent
             $this->purchaseDescr = $value;
         }
 
+        // Purchase cost
         list($found, $value) = self::parseArgVal("/m", $args);
 
         if ($found !== false) {
@@ -106,8 +113,8 @@ Usage:
 Arguments:
         /?  Help
         /c  User's ID
-        /n  User's phone number
-        /e  User's mail address
+        /n  User's phone number (if set will send text message)
+        /e  User's mail address (if set will send email message)
         /p  Purchase ID
         /d  Purchase description
         /m  Purchase cost
@@ -130,8 +137,7 @@ EOF;
                 $message = "You've just purchased {$this->purchaseDescr} (ID:{$this->purchaseId}) for {$this->purchaseCost}$";
                 mail($this->clientMail, "Purchase", $message);
             } catch (Exception $ex) {
-                echo "Error: " . $ex->getMessage();
-                exit;
+                self::error($ex->getMessage());
             }
         }
 
@@ -140,6 +146,26 @@ EOF;
         }
 
         echo "OK" . PHP_EOL;
+    }
+
+    private static function error(string $text)
+    {
+        $errorText = "Error: {$text}";
+        self::log($errorText);
+        echo $errorText;
+        exit;
+    }
+
+    private static function log(string $text)
+    {
+        $logText = "[" . date("Y-m-d H:i:s") . "] {$text}";
+
+        try {
+            file_put_contents(self::LOG_FILE, $logText, FILE_APPEND | LOCK_EX);
+        } catch (Exception $ex) {
+            echo "Error: " . $ex->getMessage();
+            exit;
+        }
     }
 }
 
