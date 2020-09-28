@@ -2,14 +2,14 @@
 
 namespace Tischmann\Cli;
 
+use Exception;
+
 class BuyEvent
 {
 
     private $clientId = null;
     private $clientPhone = null;
     private $clientMail = null;
-    private $sendMail = null;
-    private $sendMessage = null;
     private $purchaseId = null;
     private $purchaseDescr = null;
     private $purchaseCost = null;
@@ -18,11 +18,16 @@ class BuyEvent
     {
         array_shift($args);
 
-
         if (!$args) {
             echo "Error: Not enough arguments" . PHP_EOL;
             self::showInfo();
         };
+
+        list($found, $value) = self::parseArgVal("/?", $args);
+
+        if ($found !== false) {
+            self::showInfo();
+        }
 
         list($found, $value) = self::parseArgVal("/c", $args);
 
@@ -117,8 +122,29 @@ EOF;
         $value = $args[$found + 1] ?? false;
         return [$found, $value];
     }
+
+    public function sendNotification()
+    {
+        if ($this->clientMail) {
+            try {
+                $message = "You've just purchased {$this->purchaseDescr} (ID:{$this->purchaseId}) for {$this->purchaseCost}$";
+                mail($this->clientMail, "Purchase", $message);
+            } catch (Exception $ex) {
+                echo "Error: " . $ex->getMessage();
+                exit;
+            }
+        }
+
+        if ($this->clientPhone) {
+            // Send text message
+        }
+
+        echo "OK" . PHP_EOL;
+    }
 }
 
 $event = new BuyEvent($argv);
+
+$event->sendNotification();
 
 exit;
