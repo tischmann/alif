@@ -1,6 +1,8 @@
+#!/usr/bin/php
+
 <?php
 
-namespace Tischmann\Cli;
+namespace Alif\Cli;
 
 use Exception;
 
