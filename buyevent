@@ -1,0 +1,9 @@
+#!/usr/bin/php
+
+<?php
+
+require_once __DIR__ . "/Alif/App.php";
+
+Alif\App::bootstrap();
+
+$event = new Alif\BuyEvent($argv);
